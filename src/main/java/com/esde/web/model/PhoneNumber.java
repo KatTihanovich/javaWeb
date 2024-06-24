@@ -22,7 +22,7 @@ public class PhoneNumber {
         this.base64Image = base64Image;
     }
 
-    public PhoneNumber(String lastname, String phone, int userId){
+    public PhoneNumber(String lastname, String phone, int userId) {
         this.lastname = lastname;
         this.phone = phone;
         this.userId = userId;

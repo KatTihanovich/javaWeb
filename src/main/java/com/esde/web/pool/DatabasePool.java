@@ -12,32 +12,32 @@ public class DatabasePool {
     private static final String DRIVER_CLASS_NAME = "org.postgresql.Driver";
     public static final String URL = "jdbc:postgresql://localhost:5432/webdev";
     public static final String POSTGRES_USERNAME = "postgres";
-    public static final String POSTGRES_PASSWORD = "postgres";
+    public static final String POSTGRES_PASSWORD = "159357";
 
     private static final String CREATE_USERS_TABLE_IF_NOT_EXISTS = """
-        CREATE TABLE IF NOT EXISTS public.kat_users (
-            id SERIAL PRIMARY KEY,
-            username TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            verified BOOLEAN DEFAULT FALSE
-        );
-""";
+                    CREATE TABLE IF NOT EXISTS public.kat_users (
+                        id SERIAL PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        verified BOOLEAN DEFAULT FALSE
+                    );
+            """;
 
     private static final String CREATE_PHONE_NUMBERS_TABLE_IF_NOT_EXISTS = """
-       CREATE TABLE IF NOT EXISTS public.phone_numbers
-       (
-           id SERIAL PRIMARY KEY,
-           last_name text NOT NULL,
-           phone text NOT NULL,
-           photo BYTEA,
-           userid INTEGER,
-           CONSTRAINT phone_numbers_fk FOREIGN KEY (userid)
-               REFERENCES public.kat_users (id) MATCH SIMPLE
-               ON UPDATE CASCADE
-               ON DELETE CASCADE
-       )
-    """;
+               CREATE TABLE IF NOT EXISTS public.phone_numbers
+               (
+                   id SERIAL PRIMARY KEY,
+                   last_name text NOT NULL,
+                   phone text NOT NULL,
+                   photo BYTEA,
+                   userid INTEGER,
+                   CONSTRAINT phone_numbers_fk FOREIGN KEY (userid)
+                       REFERENCES public.kat_users (id) MATCH SIMPLE
+                       ON UPDATE CASCADE
+                       ON DELETE CASCADE
+               )
+            """;
 
     private static DataSource dataSource;
 
@@ -54,11 +54,11 @@ public class DatabasePool {
         dataSource = basicDataSource;
 
         try (final var connection = getConnection()) {
-            try (Statement statement = connection.createStatement()){
+            try (Statement statement = connection.createStatement()) {
                 statement.execute(CREATE_USERS_TABLE_IF_NOT_EXISTS);
                 statement.execute(CREATE_PHONE_NUMBERS_TABLE_IF_NOT_EXISTS);
             }
-        } catch(SQLException e){
+        } catch (SQLException e) {
             logger.fatal("Failed to initialize database", e);
             throw new RuntimeException("Failed to initialize database", e);
         }
@@ -66,5 +66,15 @@ public class DatabasePool {
 
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
+    }
+
+    public static void closeDataSource() {
+        if (dataSource != null) {
+            try {
+                dataSource.getConnection().close();
+            } catch (SQLException e) {
+                logger.error("Failed to close data source", e);
+            }
+        }
     }
 }

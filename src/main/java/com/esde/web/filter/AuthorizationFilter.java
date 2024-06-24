@@ -7,11 +7,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebFilter(filterName = "authorizationFilter", urlPatterns = {"/user", "/update", "/delete", "/addNumber",
-        "/editPhoneNumber", "/editPhoneName", "/editPhoneImage", "/deleteNumber", "/numbers" , "/pages/home.jsp"})
+        "/editPhoneNumber", "/editPhoneName", "/editPhoneImage", "/deleteNumber", "/numbers", "/pages/home.jsp"})
 public class AuthorizationFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    public void init(FilterConfig filterConfig) {
     }
 
     @Override

@@ -1,13 +1,26 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib uri="http://example.com/tags" prefix="custom" %>
 <c:set var="language" value="${not empty param.language ? param.language : not empty language ? language : pageContext.request.locale}" scope="session" />
 <fmt:setLocale value="${language}" />
 <fmt:setBundle basename="/text" />
 <!DOCTYPE html>
 <html lang="${language}">
 <head>
-    <title>JSP/JSTL i18n demo</title>
+    <title>Kat Tihanovich demo</title>
+    <style>
+        .centered-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .centered-image img {
+            max-width: 50%;
+            height: 50%;
+        }
+    </style>
 </head>
 <body>
 <form>
@@ -16,7 +29,9 @@
         <option value="ru" ${language == 'ru' ? 'selected' : ''}>Russian</option>
     </select>
 </form>
-<h1><fmt:message key="home.h1"/></h1>
+<h1><fmt:message key="home.h1"/>
+    <custom:greetUser />
+</h1>
 
 <h2><fmt:message key="home.h2"/></h2>
 
@@ -30,5 +45,9 @@
 <p><a href="phoneNumberDeleting.jsp"><fmt:message key="home.contacts.delete"/></a></p>
 <p><a href="${pageContext.request.contextPath}/logout"><fmt:message key="home.signout"/></a></p>
 <p><a href="${pageContext.request.contextPath}/delete"><fmt:message key="home.account.delete"/></a></p>
+
+<div class="centered-image">
+    <img src="${pageContext.request.contextPath}/images/homeImage.jpg" alt="Home Image">
+</div>
 </body>
 </html>

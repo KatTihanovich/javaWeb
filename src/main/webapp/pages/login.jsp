@@ -7,7 +7,7 @@
 <!DOCTYPE html>
 <html lang="${language}">
 <head>
-    <title>JSP/JSTL i18n demo</title>
+    <title>Kat Tihanovich demo</title>
 </head>
 <body>
 <form>

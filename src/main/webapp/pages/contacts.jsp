@@ -3,13 +3,14 @@
 <%@ page import="java.util.List" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib uri="http://example.com/tags" prefix="custom" %>
 <c:set var="language" value="${not empty param.language ? param.language : not empty language ? language : pageContext.request.locale}" scope="session" />
 <fmt:setLocale value="${language}" />
 <fmt:setBundle basename="/text" />
 <!DOCTYPE html>
 <html lang="${language}">
 <head>
-    <title>JSP/JSTL i18n demo</title>
+    <title>Kat Tihanovich demo</title>
 </head>
 <body>
 <form>
@@ -18,7 +19,9 @@
         <option value="ru" ${language == 'ru' ? 'selected' : ''}>Russian</option>
     </select>
 </form>
-<h1><fmt:message key="contacts.h1" /></h1>
+<h1><fmt:message key="contacts.h1" />
+    <custom:greetUser />
+</h1>
 
 <c:choose>
     <c:when test="${empty contactsList}">
@@ -51,4 +54,27 @@
     </c:otherwise>
 </c:choose>
 
+<c:if test="${currentPage != 1}">
+    <td><a href="numbers?page=${currentPage - 1}"><fmt:message key="contacts.previous" /></a></td>
+</c:if>
+
+<table border="1" cellpadding="5" cellspacing="5">
+    <tr>
+        <c:forEach begin="1" end="${numOfPages}" var="i">
+            <c:choose>
+                <c:when test="${currentPage eq i}">
+                    <td>${i}</td>
+                </c:when>
+                <c:otherwise>
+                    <td><a href="numbers?page=${i}">${i}</a></td>
+                </c:otherwise>
+            </c:choose>
+        </c:forEach>
+    </tr>
+</table>
+
+
+<c:if test="${currentPage lt numOfPages}">
+    <td><a href="numbers?page=${currentPage + 1}"><fmt:message key="contacts.next" /></a></td>
+</c:if>
 </body>

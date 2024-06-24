@@ -1,13 +1,14 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib uri="http://example.com/tags" prefix="custom" %>
 <c:set var="language" value="${not empty param.language ? param.language : not empty language ? language : pageContext.request.locale}" scope="session" />
 <fmt:setLocale value="${language}" />
 <fmt:setBundle basename="/text" />
 <!DOCTYPE html>
 <html lang="${language}">
 <head>
-    <title>JSP/JSTL i18n demo</title>
+    <title>Kat Tihanovich demo</title>
 </head>
 <body>
 <form>
@@ -16,7 +17,9 @@
         <option value="ru" ${language == 'ru' ? 'selected' : ''}>Russian</option>
     </select>
 </form>
-<h2><fmt:message key="addContact.h2" /></h2>
+<h2><fmt:message key="addContact.h2" />
+    <custom:greetUser />
+</h2>
 <form action="${pageContext.request.contextPath}/addNumber" method="post" enctype="multipart/form-data">
     <div>
         <label for="image"> <fmt:message key="addContact.label.image" /></label>

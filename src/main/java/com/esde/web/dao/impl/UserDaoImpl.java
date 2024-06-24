@@ -1,9 +1,13 @@
 package com.esde.web.dao.impl;
 
 import com.esde.web.dao.UserDao;
+import com.esde.web.dao.exception.DaoException;
 import com.esde.web.model.User;
 import com.esde.web.pool.DatabasePool;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.mindrot.jbcrypt.BCrypt;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,18 +16,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoImpl implements UserDao {
+    private static final Logger logger = LogManager.getLogger();
 
-//    private DataSource dataSource = DatabaseConfig.getDataSource();
+    private final static String DELETE_USER = "DELETE FROM kat_users WHERE email = ?";
+    private final static String SELECT_VERIFIED = "SELECT verified FROM kat_users WHERE email = ?";
+    private final static String VERIFY_USER = "UPDATE kat_users SET verified = true WHERE email = ?";
+    private final static String UPDATE_USERNAME = "UPDATE kat_users SET username = ? WHERE email = ?";
+    private final static String CREATE_USER = "INSERT INTO kat_users (username, email, password) VALUES (?, ?, ?)";
+    private final static String SELECT_ALL_USERS = "INSERT INTO kat_users (username, email, password) VALUES (?, ?, ?)";
+    private final static String SELECT_USER_BY_EMAIL = "SELECT id, username, password FROM kat_users WHERE email = ?";
 
-    public UserDaoImpl(){
-        DatabasePool.initializeDataSource();
+    public UserDaoImpl() {
     }
+
     @Override
-    public User findByEmail(String email) {
-        String sql = "SELECT id, username, password FROM kat_users WHERE email = ?";//константы
+    public User findByEmail(String email) throws DaoException {
         User user = null;
         try (Connection connection = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_BY_EMAIL)) {
             preparedStatement.setString(1, email);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
@@ -33,94 +43,94 @@ public class UserDaoImpl implements UserDao {
                 user = new User(id, username, email, password);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error fetching user by username", e);
+            logger.error(e);
+            throw new DaoException("Error finding user by email");
         }
         return user;
     }
 
     @Override
-    public List<User> findAll() {
+    public List<User> findAll() throws DaoException {
         List<User> userList = new ArrayList<>();
-        String sql = "SELECT username, email, password FROM kat_users";
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql);
+             PreparedStatement preparedStatement = conn.prepareStatement(SELECT_ALL_USERS);
              ResultSet rs = preparedStatement.executeQuery()) {
             while (rs.next()) {
                 userList.add(extractUserFromResultSet(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error fetching all users", e);
+            logger.error(e);
+            throw new DaoException("Error finding all users");
         }
         return userList;
     }
 
     @Override
-    public void create(User user) {
-        String sql = "INSERT INTO kat_users (username, email, password) VALUES (?, ?, ?)";
+    public void create(User user) throws DaoException {
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(CREATE_USER)) {
             preparedStatement.setString(1, user.getUsername());
             preparedStatement.setString(2, user.getEmail());
             preparedStatement.setString(3, BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
             preparedStatement.executeUpdate();
             System.out.println("create");
         } catch (SQLException e) {
-            throw new RuntimeException("Error creating user", e);
+            logger.error(e);
+            throw new DaoException("Error creating user");
         }
     }
 
     @Override
-    public void updateUsername(String email, String username) {
-        String sql = "UPDATE kat_users SET username = ? WHERE email = ?";
+    public void updateUsername(String email, String username) throws DaoException {
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(UPDATE_USERNAME)) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, email);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error updating user", e);
+            logger.error(e);
+            throw new DaoException("Error updating username");
         }
     }
 
     @Override
-    public void verifyUser(String email) {
-        String sql = "UPDATE kat_users SET verified = true WHERE email = ?";
+    public void verifyUser(String email) throws DaoException {
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(VERIFY_USER)) {
             preparedStatement.setString(1, email);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error updating user", e);
+            logger.error(e);
+            throw new DaoException("Error verifying user");
         }
     }
 
     @Override
-    public boolean userVerified(String email) {
-        String sql = "SELECT verified FROM kat_users WHERE email = ?";
+    public boolean userVerified(String email) throws DaoException {
         boolean userVerified = false;
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(SELECT_VERIFIED)) {
             preparedStatement.setString(1, email);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()) {
                 userVerified = rs.getBoolean("verified");
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error selecting user", e);
+            logger.error(e);
+            throw new DaoException("Error checking user verification");
         }
         return userVerified;
     }
 
-
     @Override
-    public void delete(String email) {
-        String sql = "DELETE FROM kat_users WHERE email = ?";
+    public void delete(String email) throws DaoException {
         try (Connection conn = DatabasePool.getConnection();
-             PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = conn.prepareStatement(DELETE_USER)) {
             preparedStatement.setString(1, email);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting user", e);
+            logger.error(e);
+            throw new DaoException("Error deleting user");
         }
     }
 
@@ -130,11 +140,5 @@ public class UserDaoImpl implements UserDao {
         user.setEmail(rs.getString("email"));
         user.setPassword(rs.getString("password"));
         return user;
-    }
-
-    private void setPreparedStatementParameters(PreparedStatement preparedStatement, User user) throws SQLException {
-        preparedStatement.setString(1, user.getUsername());
-        preparedStatement.setString(2, user.getEmail());
-        preparedStatement.setString(3, user.getPassword());
     }
 }

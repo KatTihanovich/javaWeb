@@ -1,8 +1,10 @@
 package com.esde.web.service.impl;
 
 import com.esde.web.service.EmailService;
+import com.esde.web.service.exception.ServiceException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.Properties;
 import java.util.Random;
 import javax.mail.Authenticator;
@@ -13,7 +15,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class EmailServiceImpl implements EmailService{
+public class EmailServiceImpl implements EmailService {
     private static final Logger logger = LogManager.getLogger();
 
     @Override
@@ -24,7 +26,7 @@ public class EmailServiceImpl implements EmailService{
     }
 
     @Override
-    public void sendEmail(String email, String code) {
+    public void sendEmail(String email, String code) throws ServiceException {
         String toEmail = email;
         String fromEmail = "stdlabconf@gmail.com";
         String password = "ucntncdnbbunhxdu";
@@ -53,7 +55,7 @@ public class EmailServiceImpl implements EmailService{
             Transport.send(mess);
         } catch (Exception e) {
             logger.error(e);
+            throw new ServiceException("Unable to send an email");
         }
     }
 }
-
